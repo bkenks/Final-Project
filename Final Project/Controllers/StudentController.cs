@@ -14,12 +14,7 @@ namespace Final_Project.Controllers
     [Route("[controller]")]
     public class StudentController : ControllerBase
     {
-        private FinalContext context = new FinalContext();
-
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
+        private readonly FinalContext context;
 
         private readonly ILogger<StudentController> _logger;
 
@@ -29,23 +24,49 @@ namespace Final_Project.Controllers
             context = _context;
         }
 
+        private Student GetRowById(int id)
+        {
+            return context.Student.Where(x => x.Id.Equals(id)).FirstOrDefault();
+        }
+
         [HttpGet]
         public IActionResult Get()
         {
-            Debug.WriteLine(context.Student.ToList());
             return Ok(context.Student.ToList());
         }
 
-        //[HttpPut]
-        //public IActionResult Put(Student student)
-        //{
-        //    //context.
-        //}
+        [HttpDelete]
+        public IActionResult Delete(int id)
+        {
+            var row = GetRowById(id);
+            context.Student.Remove(row);
+            context.SaveChanges();
+            return Ok(row);
+        }
 
-        //[HttpPost]
-        //public IActionResult Post(Student student)
-        //{
-        //    var result = context.Student.Add(student);
-        //}
+        [HttpPut]
+        public IActionResult Put(Student student)
+        {
+            var rowToUpdate = this.GetRowById(student.Id);
+
+            rowToUpdate.FirstName = student.FirstName;
+            rowToUpdate.LastName = student.LastName;
+            rowToUpdate.Program = student.Program;
+            rowToUpdate.Birthday = student.Birthday;
+            rowToUpdate.Year = student.Year;
+
+            context.Student.Update(rowToUpdate);
+            context.SaveChanges();
+
+            return Ok(rowToUpdate);
+        }
+
+        [HttpPost]
+        public IActionResult Post(Student student)
+        {
+            context.Student.Add(student);
+            context.SaveChanges();
+            return Ok(student);
+        }
     }
 }
